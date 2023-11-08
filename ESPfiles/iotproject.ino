@@ -22,8 +22,8 @@
 
 
 // Replace with your network credentials
-const char* ssid = "***";
-const char* password = "***";
+const char* ssid = "2000-2004@Gainesville_place";
+const char* password = "TwJK4b7XZ";
 
 // Replace with your server information
 const char* server = "jsonplaceholder.typicode.com";
@@ -142,8 +142,18 @@ String base64Encode(uint8_t *data, size_t len) {
     base64 += base64chars[octet_c & 0x3F];
   }
 
+  // Handle padding for the last group of 1 or 2 bytes
+  size_t padding = len % 3;
+  if (padding == 1) {
+    base64[base64.length() - 2] = '=';
+    base64[base64.length() - 1] = '=';
+  } else if (padding == 2) {
+    base64[base64.length() - 1] = '=';
+  }
+
   return base64;
 }
+
 
 void sendImageToServer(String base64Image) {
   HTTPClient http;
@@ -163,5 +173,6 @@ void sendImageToServer(String base64Image) {
   }
 
   http.end();
+  Serial.println(base64Image);
   delay(5000); // Delay before capturing another photo
 }

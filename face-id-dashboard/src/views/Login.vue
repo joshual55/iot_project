@@ -1,10 +1,13 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+const router = useRouter();
 const email = ref('');
 const password = ref('');
 const handleLoginSubmit = () => {
   console.log('[handle-login-submit]', email.value, password.value);
   // TOOD: Handle form validation
+  router.push('/');
 }
 </script>
 <template>
