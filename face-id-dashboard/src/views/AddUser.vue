@@ -10,22 +10,24 @@ const phoneNumber = ref('');
 const profilePicture = ref('');
 const errorMessage = ref('');
 const successMessage = ref('');
+const faceId = ref('');
 const handleCreateUser = async () => {
-  if( !unref(firstName) || !unref(lastName) || !unref(phoneNumber) ) {
+  if (!unref(firstName) || !unref(lastName) || !unref(phoneNumber)) {
     errorMessage.value = 'Please fill out all fields';
   } else {
+    await handleFaceRegonition();
     const { data, error } = await supabase
-    .from('users')
-    .insert([
-      { first_name: unref(firstName), last_name: unref(lastName), phone: unref(phoneNumber) },
-    ])
-    .select();
+      .from('users')
+      .insert([
+        { first_name: unref(firstName), last_name: unref(lastName), phone: unref(phoneNumber), face_id: unref(faceId) },
+      ])
+      .select();
     if (error) {
       successMessage.value = '';
       errorMessage.value = error.message;
     } else {
       errorMessage.value = '';
-      successMessage.value = 'User created successfully! Recogizing faces...';
+      successMessage.value = 'User created successfully! Faces recognized!';
     }
   }
 };
@@ -36,9 +38,12 @@ const handleFileChange = (event) => {
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      profilePicture.value = e.target.result;
+      // remove data:image/jpeg;base64, from the string
+      profilePicture.value = e.target.result.replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
+      handleFaceRegonition();
     };
     reader.readAsDataURL(file);
+  
   }
 };
 
@@ -46,9 +51,11 @@ const handleFaceRegonition = async () => {
   axios.post('/api', {
     imgdata: unref(profilePicture),
   })
-  .then((res) => {
-    console.log(res);
-  })
+    .then((res) => {
+      if (res.data) {
+        faceId.value = res.data.data.FaceRecords[0].Face.FaceId;
+      }
+    })
 };
 </script>
 
@@ -59,19 +66,24 @@ const handleFaceRegonition = async () => {
     <div class="form-wrapper w-[500px] mx-auto gap-y-3 flex flex-col">
       <div class="grid grid-cols-2 gap-2">
         <input type="text"
-          placeholder="First Name" v-model="firstName" />
+          placeholder="First Name"
+          v-model="firstName" />
         <input type="text"
-          placeholder="Last Name" v-model="lastName"/>
+          placeholder="Last Name"
+          v-model="lastName" />
       </div>
       <input type="text"
-        placeholder="Phone Number" v-model="phoneNumber" />
+        placeholder="Phone Number"
+        v-model="phoneNumber" />
       <input type="file"
         @change="handleFileChange"
         accept="image/*" />
+      <p v-if="faceId" class="text-xs text-green-600 text-right">Upload Successful!</p>
       <button @click="handleCreateUser">Create User</button>
-      <button @click="handleFaceRegonition">Recognize Face</button>
       <p class="text-red-500 text-center">{{ errorMessage }}</p>
+      <!-- -->
       <p class="text-green-500 text-center">{{ successMessage }}</p>
+
     </div>
   </div>
 </template>
