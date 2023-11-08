@@ -10,6 +10,7 @@
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.38.4",
     "sass": "^1.69.5",
     "sass-loader": "^13.3.2",
     "vue": "^3.3.4",
