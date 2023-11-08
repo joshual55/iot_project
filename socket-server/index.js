@@ -28,6 +28,6 @@ io.on("connection", async (socket) => {
     //
     // Impklement logic to check db and verify user is allowed to unlock door
     //
-    io.emit("unlock_door", true);
+    io.emit("unlock_door", "Let's unlock the door!");
   });
 });
