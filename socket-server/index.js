@@ -12,6 +12,9 @@ server.listen(80, () => {
 });
 
 io.on("connection", async (socket) => {
+  socket.on("status", async (msg) => {
+    console.log('Status: ', msg)
+  });
   socket.on("user_authorized", async () => {
     console.log('Unlocking the door!')
     //
