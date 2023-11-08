@@ -8,17 +8,25 @@ const firstName = ref('');
 const lastName = ref('');
 const phoneNumber = ref('');
 const profilePicture = ref('');
-const message = ref('');
+const errorMessage = ref('');
+const successMessage = ref('');
 const handleCreateUser = async () => {
   if( !unref(firstName) || !unref(lastName) || !unref(phoneNumber) ) {
-    message.value = 'Please fill out all fields';
+    errorMessage.value = 'Please fill out all fields';
   } else {
     const { data, error } = await supabase
     .from('users')
     .insert([
       { first_name: unref(firstName), last_name: unref(lastName), phone: unref(phoneNumber) },
     ])
-    .select()
+    .select();
+    if (error) {
+      successMessage.value = '';
+      errorMessage.value = error.message;
+    } else {
+      errorMessage.value = '';
+      successMessage.value = 'User created successfully!';
+    }
   }
 };
 
@@ -52,7 +60,8 @@ const handleFileChange = (event) => {
         @change="handleFileChange"
         accept="image/*" />
       <button @click="handleCreateUser">Create User</button>
-      <p class="text-red-500 text-center">{{ message }}</p>
+      <p class="text-red-500 text-center">{{ errorMessage }}</p>
+      <p class="text-green-500 text-center">{{ successMessage }}</p>
     </div>
   </div>
 </template>
