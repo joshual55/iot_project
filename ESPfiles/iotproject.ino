@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include "esp_camera.h"
+#include <MyBase64.h>
 
 #define PWDN_GPIO_NUM    -1
 #define RESET_GPIO_NUM   -1
@@ -38,18 +39,11 @@ const int buttonPin = 15;
 // Camera settings
 camera_config_t config;
 camera_fb_t* fb = NULL;
+bool capturePhotoFlag = false;
 
 void setup() {
   // Initialize Serial communication
   Serial.begin(115200);
-
-  // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting to WiFi...");
-  }
-  Serial.println("Connected to WiFi");
 
   // Initialize the camera
   camera_config_t config;
@@ -77,13 +71,13 @@ void setup() {
   //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.jpeg_quality = 12;
+  config.jpeg_quality = 40;
   config.fb_count = 1;
 
   // Init with high specs to pre-allocate larger buffers
   if (psramFound()) {
     config.frame_size = FRAMESIZE_UXGA;
-    config.jpeg_quality = 10;
+    config.jpeg_quality = 40;
     config.fb_count = 2;
   } else {
     config.frame_size = FRAMESIZE_SVGA;
@@ -102,10 +96,22 @@ void setup() {
 }
 
 void loop() {
+  // Check if the button is pressed
   if (digitalRead(buttonPin) == LOW) {
-    // Button is pressed, capture a photo
-    capturePhoto();
+    // Button is pressed, set the flag to capture a photo
+    Serial.println("Button Pressed");
+    capturePhotoFlag = true;
   }
+
+  // Check if the flag is set to capture a photo
+  if (capturePhotoFlag) {
+    capturePhoto();
+    Serial.println(Photo2Base64());
+    capturePhotoFlag = false; // Reset the flag
+  }
+
+  // Delay for some time to prevent continuous captures
+  //delay(1000); // Adjust the delay time as needed
 }
 
 void capturePhoto() {
@@ -117,62 +123,55 @@ void capturePhoto() {
   }
 
   // Encode the captured image as base64
-  String base64Image = base64Encode(fb->buf, fb->len);
-
   // Release the frame buffer
   esp_camera_fb_return(fb);
 
   // Send a POST request with the base64 image data
-  sendImageToServer(base64Image);
 }
 
 
-String base64Encode(uint8_t *data, size_t len) {
-  const char* base64chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  String base64 = "";
+String Photo2Base64() {
+    camera_fb_t * fb = esp_camera_fb_get();
+    if(!fb) {
+      Serial.println("Camera capture failed");
+      return "";
+    }
 
-  for (size_t i = 0; i < len; i += 3) {
-    uint32_t octet_a = i < len ? data[i] : 0;
-    uint32_t octet_b = (i + 1) < len ? data[i + 1] : 0;
-    uint32_t octet_c = (i + 2) < len ? data[i + 2] : 0;
+    String imageFile = "data:image/jpeg;base64,";
 
-    base64 += base64chars[(octet_a >> 2) & 0x3F];
-    base64 += base64chars[((octet_a << 4) | (octet_b >> 4)) & 0x3F];
-    base64 += base64chars[((octet_b << 2) | (octet_c >> 6)) & 0x3F];
-    base64 += base64chars[octet_c & 0x3F];
-  }
+    // Calculate the size of the base64 encoded string
+    int outputLength = base64_enc_len(fb->len);
+    char *output = (char *)malloc(outputLength + 1); // +1 for null terminator
 
-  // Handle padding for the last group of 1 or 2 bytes
-  size_t padding = len % 3;
-  if (padding == 1) {
-    base64[base64.length() - 2] = '=';
-    base64[base64.length() - 1] = '=';
-  } else if (padding == 2) {
-    base64[base64.length() - 1] = '=';
-  }
+    // Perform base64 encoding
+    base64_encode(output, (char *)fb->buf, fb->len);
 
-  return base64;
+    // Append the encoded data to the image file string
+    imageFile += String(output);
+
+    // Free the allocated memory for the output buffer
+    free(output);
+
+    esp_camera_fb_return(fb);
+
+    return imageFile;
 }
 
 
-void sendImageToServer(String base64Image) {
-  HTTPClient http;
-  http.begin(server, serverPort, apiEndpoint);
-
-  // Set the content type and the base64 image as the request body
-  http.addHeader("Content-Type", "application/json");
-  String json = "{\"image\":\"" + base64Image + "\"}";
-
-  int httpResponseCode = http.POST(json);
-
-  if (httpResponseCode > 0) {
-    Serial.print("HTTP Response code: ");
-    Serial.println(httpResponseCode);
-  } else {
-    Serial.println("HTTP Error");
+String urlencode(String str) {
+  const char *msg = str.c_str();
+  const char *hex = "0123456789ABCDEF";
+  String encodedMsg = "";
+  while (*msg != '\0') {
+    if (('a' <= *msg && *msg <= 'z') || ('A' <= *msg && *msg <= 'Z') || ('0' <= *msg && *msg <= '9') || *msg == '-' || *msg == '_' || *msg == '.' || *msg == '~') {
+      encodedMsg += *msg;
+    } else {
+      encodedMsg += '%';
+      encodedMsg += hex[(unsigned char)*msg >> 4];
+      encodedMsg += hex[*msg & 0xf];
+    }
+    msg++;
   }
-
-  http.end();
-  Serial.println(base64Image);
-  delay(5000); // Delay before capturing another photo
+  return encodedMsg;
 }
+
