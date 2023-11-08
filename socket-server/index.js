@@ -7,8 +7,8 @@ const io = new Server(server);
 // import from node moduels
 app.use(express.static(__dirname + "/"));
 
-server.listen(3000, () => {
-  console.log("listening on *:3000");
+server.listen(80, () => {
+  console.log("listening on *:80");
 });
 
 io.on("connection", async (socket) => {
