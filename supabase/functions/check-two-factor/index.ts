@@ -6,22 +6,45 @@
 // Find your Account SID and Auth Token at twilio.com/console
 // and set the environment variables. See http://twil.io/secure
 
-const accountSid = process.env.ACCOUNT_SID;
-const authToken = process.env.AUTH_TOKEN;
-const serviceID = process.env.VERIFY_SERVICE_SID;
-const client = require('twilio')(accountSid, authToken);
+const { createClient } = require('@supabase/supabase-js')
+
+const supabase = createClient('https://aoymgietyhxxhklhhvxw.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFveW1naWV0eWh4eGhrbGhodnh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTkzMDE0OTAsImV4cCI6MjAxNDg3NzQ5MH0.ikEgGwGdh9hK1dS4sp58DoWiZIQz81d5HWBGQ3Gvfk8');
+// const accountSid = process.env.ACCOUNT_SID;
+// const authToken = process.env.AUTH_TOKEN;
+// const serviceID = process.env.VERIFY_SERVICE_SID;
+// const client = require('twilio')(accountSid, authToken);
 
 async function get2FAResponse(phone:string) {
-  client.verify.v2.services(serviceID)
-    .verifications
-    .create({
-      to: phone,
-      channel: 'sms'})
-    .then(verification => {
-      console.log(verification.sid);
-      const json2FA = JSON.stringify({ status: verification.status, valid: verification.valid});
-      return json2FA;
-    });
+  //Send user SMS message with 2FA code
+  const { sendData, sendError } = await supabase.auth.signInWithOtp({
+  phone: phone
+  })
+  //If we were able to successfully send the user an sms message with the 2FA code, then go to the verify step
+  if (sendData !== undefined) {
+    const { verifyData, verifyError } = await supabase.auth.verifyOtp({
+      phone: phone,
+      token: '123456',
+      type: 'sms'
+    })
+    //In the case of the 2FA working, it will send a JSON message back saying it was successful
+    if (verifyData !== undefined) {
+        const json2FA = JSON.stringify({ status: "Success"});
+        return json2FA;
+    
+    }
+  }
+
+
+  // client.verify.v2.services(serviceID)
+  //   .verifications
+  //   .create({
+  //     to: phone,
+  //     channel: 'sms'})
+  //   .then(verification => {
+  //     console.log(verification.sid);
+  //     const json2FA = JSON.stringify({ status: verification.status, valid: verification.valid});
+  //     return json2FA;
+  //   });
 }
 
 // console.log("Hello from Functions!")
