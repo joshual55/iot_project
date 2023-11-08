@@ -3,7 +3,15 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
-const io = new Server(server);
+const io = require("socket.io")(server, {
+  cors: {
+   origin: "*",
+   methods: ["GET", "POST"],
+   transports: ["websocket", "polling"],
+   credentials: true,
+  },
+   allowEIO3: true,
+  });
 // import from node moduels
 app.use(express.static(__dirname + "/"));
 
