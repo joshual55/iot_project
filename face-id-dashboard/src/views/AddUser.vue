@@ -1,7 +1,7 @@
 <script setup>
 import Navbar from '@/components/Navbar.vue';
 import { supabase } from '@/supabase'
-
+import axios from 'axios';
 import { ref, unref } from 'vue';
 
 const firstName = ref('');
@@ -25,21 +25,30 @@ const handleCreateUser = async () => {
       errorMessage.value = error.message;
     } else {
       errorMessage.value = '';
-      successMessage.value = 'User created successfully!';
+      successMessage.value = 'User created successfully! Recogizing faces...';
     }
   }
 };
+
 
 const handleFileChange = (event) => {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      console.log(e.target.result); // This is the Base64 string
       profilePicture.value = e.target.result;
     };
     reader.readAsDataURL(file);
   }
+};
+
+const handleFaceRegonition = async () => {
+  axios.post('https://9otaictrgg.execute-api.us-east-2.amazonaws.com/my-add-face-deployment', {
+    imgdata: unref(profilePicture),
+  })
+  .then((res) => {
+    console.log(res);
+  })
 };
 </script>
 
@@ -60,6 +69,7 @@ const handleFileChange = (event) => {
         @change="handleFileChange"
         accept="image/*" />
       <button @click="handleCreateUser">Create User</button>
+      <button @click="handleFaceRegonition">Recognize Face</button>
       <p class="text-red-500 text-center">{{ errorMessage }}</p>
       <p class="text-green-500 text-center">{{ successMessage }}</p>
     </div>
