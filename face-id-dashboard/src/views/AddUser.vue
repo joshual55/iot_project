@@ -43,7 +43,7 @@ const handleFileChange = (event) => {
 };
 
 const handleFaceRegonition = async () => {
-  axios.post('https://9otaictrgg.execute-api.us-east-2.amazonaws.com/my-add-face-deployment', {
+  axios.post('/api', {
     imgdata: unref(profilePicture),
   })
   .then((res) => {
