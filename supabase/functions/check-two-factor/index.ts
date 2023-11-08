@@ -30,10 +30,8 @@ async function get2FAResponse(phone:string) {
     if (verifyData !== undefined) {
         const json2FA = JSON.stringify({ status: "Success"});
         return json2FA;
-    
     }
   }
-
 
   // client.verify.v2.services(serviceID)
   //   .verifications
