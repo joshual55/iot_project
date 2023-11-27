@@ -1,9 +1,10 @@
 // Follow this setup guide to integrate the Deno language server with your editor:
 // https://deno.land/manual/getting_started/setup_your_environment
 // This enables autocomplete, go to definition, etc.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-console.log("Hello from Functions!")
-const searchFaceEndpoint = 'https://eo54wpbomc.execute-api.us-east-2.amazonaws.com/facial-search'
+const searchFaceEndpoint =
+  "https://eo54wpbomc.execute-api.us-east-2.amazonaws.com/facial-search";
 
 Deno.serve(async (req) => {
   try {
@@ -12,11 +13,11 @@ Deno.serve(async (req) => {
     const requestData = JSON.stringify({ imgdata: imgdata });
 
     const response = await fetch(searchFaceEndpoint, {
-      method: 'POST',
+      method: "POST",
       body: requestData,
       headers: {
-        'Content-Type': 'application/json'
-      }
+        "Content-Type": "application/json",
+      },
     });
 
     if (!response.ok) {
@@ -25,19 +26,43 @@ Deno.serve(async (req) => {
 
     const responseJSON = await response.json();
     //
-    // TODO: Use supabse SDK to take responseJSON.data.FaceMatches[0].FaceId and find user in database
+    // Use supabse SDK to take responseJSON.data.FaceMatches[0].FaceId and find user in database
     //
-    return new Response(
-      JSON.stringify(responseJSON.data.FaceMatches),
-      { headers: { "Content-Type": "application/json" } },
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      {
+        global: {
+          headers: { Authorization: req.headers.get("Authorization")! },
+        },
+      }
     );
+
+    // Database queries will have RLS policies enforced
+    const { data, error } = await supabaseClient.from("users").select("*").eq('face_id', responseJSON.data.FaceMatches[0].Face.FaceId);
+    
+    //
+    // TODO: Implement handler to send messsage via SMS
+    //
+    
+    const responseObject = {
+      face: responseJSON.data.FaceMatches[0],
+      user: data,
+    }
+    //
+    // TODO: Implement response that will determine if user is authorized or not.
+    //
+    return new Response(JSON.stringify(responseObject), {
+      headers: { "Content-Type": "application/json" },
+    });
+
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
-})
+});
 
 // To invoke:
 // curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/' \
