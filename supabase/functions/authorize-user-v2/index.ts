@@ -44,7 +44,42 @@ Deno.serve(async (req) => {
     //
     // TODO: Implement handler to send messsage via SMS
     //
+
+    const signIn = async() => {
+      let{ error } = await supabaseClient.auth.signInWithOtp({
+        phone: ''
+      })
+
+      if (error) {
+        console.error(error)
+        return
+      }
+    }
     
+    signIn()
+
+    //Get the token/code from the web app then put it in verify
+
+    const verify = async() => {
+      let { session, error } = await supabaseClient.auth.verifyOTP({
+        phone: '',
+        token: '',
+        type: 'sms'
+      })
+
+      if (error) {
+        console.error(error)
+        return
+      }
+
+      if (session) {
+        //then return the ok to unlock the door
+      }
+    }
+
+    verify()
+
+
     const responseObject = {
       face: responseJSON.data.FaceMatches[0],
       user: data,
