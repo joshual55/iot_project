@@ -31,7 +31,7 @@ const char* server = "jsonplaceholder.typicode.com";
 const int serverPort = 443; // HTTPs default port
 
 // Replace with your API endpoint
-const char* apiEndpoint = "/your-api-endpoint";
+const char* apiEndpoint = "https://aoymgietyhxxhklhhvxw.supabase.co/functions/v1/authorize-user-v2";
 
 // Pin number for the button
 const int buttonPin = 15;
@@ -95,24 +95,43 @@ void setup() {
   pinMode(buttonPin, INPUT_PULLUP);
 }
 
+bool captureInProgress = false;
+
 void loop() {
   // Check if the button is pressed
-  if (digitalRead(buttonPin) == LOW) {
-    // Button is pressed, set the flag to capture a photo
+  if (digitalRead(buttonPin) == LOW && !captureInProgress) {
     Serial.println("Button Pressed");
-    capturePhotoFlag = true;
+    captureInProgress = true;
+    capturePhoto(); // Capture a new photo
   }
 
-  // Check if the flag is set to capture a photo
-  if (capturePhotoFlag) {
-    capturePhoto();
-    Serial.println(Photo2Base64());
-    capturePhotoFlag = false; // Reset the flag
+  if (captureInProgress && fb != NULL) {
+    // Convert the captured photo to base64
+    String base64Image = Photo2Base64();
+
+    // Send the base64 image to the server
+    if (!base64Image.isEmpty()) {
+      sendImageToServer(base64Image);
+    }
+
+    // Reset capture flag and release the frame buffer
+    captureInProgress = false;
+    esp_camera_fb_return(fb);
+    fb = NULL;
   }
 
   // Delay for some time to prevent continuous captures
-  //delay(1000); // Adjust the delay time as needed
+  delay(100); // Adjust the delay time as needed
 }
+
+  // Check if the flag is set to capture a photo
+  //if (capturePhotoFlag) {
+    
+    //capturePhotoFlag = false; // Reset the flag
+  //}
+
+  // Delay for some time to prevent continuous captures
+  //delay(1000); // Adjust the delay time as needed
 
 void capturePhoto() {
   fb = esp_camera_fb_get();
@@ -154,24 +173,26 @@ String Photo2Base64() {
 
     esp_camera_fb_return(fb);
 
+    Serial.println(imageFile);
     return imageFile;
 }
 
+void sendImageToServer(String base64Image) {
+  HTTPClient http;
+  http.begin(server, serverPort, apiEndpoint);
 
-String urlencode(String str) {
-  const char *msg = str.c_str();
-  const char *hex = "0123456789ABCDEF";
-  String encodedMsg = "";
-  while (*msg != '\0') {
-    if (('a' <= *msg && *msg <= 'z') || ('A' <= *msg && *msg <= 'Z') || ('0' <= *msg && *msg <= '9') || *msg == '-' || *msg == '_' || *msg == '.' || *msg == '~') {
-      encodedMsg += *msg;
-    } else {
-      encodedMsg += '%';
-      encodedMsg += hex[(unsigned char)*msg >> 4];
-      encodedMsg += hex[*msg & 0xf];
-    }
-    msg++;
+  // Set the content type and the base64 image as the request body
+  http.addHeader("Content-Type", "application/json");
+
+  int httpResponseCode = http.POST(base64Image);
+
+  if (httpResponseCode > 0) {
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
+  } else {
+    Serial.println("HTTP Error");
   }
-  return encodedMsg;
-}
 
+  http.end();
+  //delay(5000); // Delay before capturing another photo
+}
