@@ -23,12 +23,8 @@
 
 
 // Replace with your network credentials
-const char* ssid = "2000-2004@Gainesville_place";
-const char* password = "TwJK4b7XZ";
-
-// Replace with your server information
-const char* server = "jsonplaceholder.typicode.com";
-const int serverPort = 443; // HTTPs default port
+const char* ssid = "Verizon XT1585 2611";
+const char* password = "sh@wn0153";
 
 // Replace with your API endpoint
 const char* apiEndpoint = "https://aoymgietyhxxhklhhvxw.supabase.co/functions/v1/authorize-user-v2";
@@ -44,6 +40,7 @@ bool capturePhotoFlag = false;
 void setup() {
   // Initialize Serial communication
   Serial.begin(115200);
+  WiFi.begin(ssid, password);
 
   // Initialize the camera
   camera_config_t config;
@@ -178,24 +175,27 @@ String Photo2Base64() {
 }
 
 void sendImageToServer(String base64Image) {
+  //HTTPClient http;
+  WiFiClient client;
   HTTPClient http;
-  http.begin(server, serverPort, apiEndpoint);
+
+  http.begin(client, apiEndpoint);
 
   // Set the content type and the base64 image as the request body
-  http.addHeader("Content-Type", "application/json");
+  http.addHeader("Content-Type", "text/plain");
 
-int httpResponseCode = http.POST(base64Image);
+  int httpResponseCode = http.POST(base64Image);
 
-if (httpResponseCode > 0) {
-  Serial.print("HTTP Response code: ");
-  Serial.println(httpResponseCode);
+  if (httpResponseCode > 0) {
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
 
-  // Read the response from the server (if needed)
-  String response = http.getString();
-  Serial.println("Server response: " + response);
-} else {
-  Serial.print("HTTP Error: ");
-  Serial.println(httpResponseCode);
+    // Read the response from the server (if needed)
+    String response = http.getString();
+    Serial.println("Server response: " + response);
+  } else {
+    Serial.print("HTTP Error: ");
+    Serial.println(httpResponseCode);
 }
 
   http.end();
