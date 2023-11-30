@@ -184,14 +184,19 @@ void sendImageToServer(String base64Image) {
   // Set the content type and the base64 image as the request body
   http.addHeader("Content-Type", "application/json");
 
-  int httpResponseCode = http.POST(base64Image);
+int httpResponseCode = http.POST(base64Image);
 
-  if (httpResponseCode > 0) {
-    Serial.print("HTTP Response code: ");
-    Serial.println(httpResponseCode);
-  } else {
-    Serial.println("HTTP Error");
-  }
+if (httpResponseCode > 0) {
+  Serial.print("HTTP Response code: ");
+  Serial.println(httpResponseCode);
+
+  // Read the response from the server (if needed)
+  String response = http.getString();
+  Serial.println("Server response: " + response);
+} else {
+  Serial.print("HTTP Error: ");
+  Serial.println(httpResponseCode);
+}
 
   http.end();
   //delay(5000); // Delay before capturing another photo
