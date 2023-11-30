@@ -23,8 +23,8 @@
 
 
 // Replace with your network credentials
-const char* ssid = "Verizon XT1585 2611";
-const char* password = "sh@wn0153";
+const char* ssid = "***";
+const char* password = "***";
 
 // Replace with your API endpoint
 const char* apiEndpoint = "https://aoymgietyhxxhklhhvxw.supabase.co/functions/v1/authorize-user-v2";
@@ -182,7 +182,7 @@ void sendImageToServer(String base64Image) {
   http.begin(client, apiEndpoint);
 
   // Set the content type and the base64 image as the request body
-  http.addHeader("Content-Type", "text/plain");
+  http.addHeader("Content-Type", "application/json");
 
   int httpResponseCode = http.POST(base64Image);
 
