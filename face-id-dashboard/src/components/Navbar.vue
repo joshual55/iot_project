@@ -3,7 +3,6 @@
     <h4 class="font-medium text-blue-600">🐊 Node ICU</h4>
     <ul class="navbar-nav">
       <li><router-link to="/">Dashboard</router-link></li>
-      <li><router-link to="/">Settings</router-link></li>
       <li class="button"><router-link to="/add-user">Add User</router-link></li>
     </ul>
   </div>
