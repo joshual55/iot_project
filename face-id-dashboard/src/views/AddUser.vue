@@ -92,7 +92,6 @@ const handleFaceRegonition = async () => {
 <template>
   <div class="dashboard-landing">
     <Navbar />
-    <button @click="test2faLogin">Send msg</button>
     <h1 class="text-center text-xl font-bold mb-4 mt-20">Add New User</h1>
     <div class="form-wrapper w-[500px] mx-auto gap-y-6 flex flex-col">
       <div class="grid grid-cols-2 gap-2">
