@@ -6,6 +6,7 @@ import { io } from 'socket.io-client';
 
 const code = ref('');
 const phone = ref('');
+const socketMessage = ref('');
 const socketURL = 'http://ec2-18-118-47-118.us-east-2.compute.amazonaws.com';
 let socket;
 
@@ -24,6 +25,7 @@ const handleVerifyCode = () => {
   // Handle other events
   socket.on('message', (data) => {
     console.log('Message from server:', data);
+    socketMessage.value = data;
   });
 
   socket.on('disconnect', () => {
@@ -54,6 +56,7 @@ const handleVerifyCode = () => {
           placeholder="Enter code" />
       </div>
       <button @click="handleVerifyCode">Unlock Door</button>
+      {{  socketMessage  }}
     </div>
   </div>
 </template>
