@@ -94,19 +94,28 @@ const handleFaceRegonition = async () => {
     <Navbar />
     <button @click="test2faLogin">Send msg</button>
     <h1 class="text-center text-xl font-bold mb-4 mt-20">Add New User</h1>
-    <div class="form-wrapper w-[500px] mx-auto gap-y-3 flex flex-col">
+    <div class="form-wrapper w-[500px] mx-auto gap-y-6 flex flex-col">
       <div class="grid grid-cols-2 gap-2">
-        <input type="text"
-          placeholder="First Name"
-          v-model="firstName" />
-        <input type="text"
-          placeholder="Last Name"
-          v-model="lastName" />
+        <div>
+          <input type="text"
+            placeholder="First Name"
+            v-model="firstName" />
+          <div class="text-xs">Please enter your first name.</div>
+        </div>
+        <div>
+          <input type="text"
+            placeholder="Last Name"
+            v-model="lastName" />
+          <div class="text-xs">Please enter your last name.</div>
+        </div>
       </div>
+      <div>
+        <input type="text"
+          placeholder="Phone Number"
+          v-model="phoneNumber" />
+        <div class="text-xs">Please enter number with no special characters, and include country code. (e.g 13218008577)</div>
 
-      <input type="text"
-        placeholder="Phone Number"
-        v-model="phoneNumber" />
+      </div>
       <input type="password"
         placeholder="Password"
         v-model="password" />
@@ -128,7 +137,7 @@ const handleFaceRegonition = async () => {
 <style lang="scss" scoped>
 .form-wrapper {
   input {
-    @apply border border-slate-300 p-2 rounded-lg w-full;
+    @apply border border-slate-300 p-2 rounded-lg w-full mb-1;
   }
 
   button {
