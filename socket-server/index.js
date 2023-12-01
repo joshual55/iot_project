@@ -46,7 +46,7 @@ io.on("connection", async (socket) => {
       return;
     } else {
       io.emit("unlock_door", "Let's unlock the door!");
-      console.log(`[unlock-success] - unlocking for ${data?.data.user.id}` );
+      console.log(`[unlock-success] - unlocking for ${data.user.id}` );
     }
   });
 });
