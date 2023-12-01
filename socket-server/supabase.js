@@ -6,3 +6,5 @@ const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 // Create Supabase client
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+module.exports = supabase;
