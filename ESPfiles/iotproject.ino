@@ -22,6 +22,8 @@
 #define HREF_GPIO_NUM    23
 #define PCLK_GPIO_NUM    22
 
+const byte red_led_gpio = 33;
+const byte green_led_gpio = 32;
 
 // Replace with your network credentials
 const char* ssid = "Verizon XT1585 2611";
@@ -42,6 +44,9 @@ void setup() {
   // Initialize Serial communication
   Serial.begin(115200);
   WiFi.begin(ssid, password);
+
+  pinMode(red_led_gpio, OUTPUT);
+  pinMode(green_led_gpio, OUTPUT);
 
   // Initialize the camera
   camera_config_t config;
@@ -191,6 +196,15 @@ void sendImageToServer(String base64Image) {
   String jsonBody = "{\"imgdata\":\"" + base64Image + "\"}";
   int httpResponseCode = http.POST(jsonBody);
 
+  if (httpResponseCode == 200) {
+    digitalWrite(green_led_gpio, HIGH);  // Turn on green LED for 5 seconds
+    delay(5000);
+    digitalWrite(green_led_gpio, LOW);   // Turn off green LED
+  } else {
+    digitalWrite(red_led_gpio, HIGH);    // Turn on red LED for 5 seconds
+    delay(5000);
+    digitalWrite(red_led_gpio, LOW);     // Turn off red LED
+  }
 
   if (httpResponseCode > 0) {
     Serial.print("HTTP Response code: ");
