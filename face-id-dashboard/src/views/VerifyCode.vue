@@ -6,7 +6,7 @@ import { io } from 'socket.io-client';
 
 const code = ref('');
 const phone = ref('');
-const socketMessage = ref('');
+const socketMessage = ref({});
 const socketURL = 'http://ec2-18-118-47-118.us-east-2.compute.amazonaws.com';
 let socket;
 
@@ -23,10 +23,17 @@ const handleVerifyCode = () => {
   });
 
   // Handle other events
-  socket.on('message', (data) => {
+  socket.on('unlock_error', (data) => {
     console.log('Message from server:', data);
-    socketMessage.value = data;
+    const err  = JSON.parse(data);
+    socketMessage.value = err;
   });
+  socket.on('unlock_door', (data) => {
+    socketMessage.value = {
+      type: 'success',
+      message: 'Door unlocked!',
+    };
+  })
 
   socket.on('disconnect', () => {
     console.log('Disconnected from Socket.IO server');
@@ -56,7 +63,8 @@ const handleVerifyCode = () => {
           placeholder="Enter code" />
       </div>
       <button @click="handleVerifyCode">Unlock Door</button>
-      {{  socketMessage  }}
+      <p class="text-red-500 text-center" v-if="socketMessage.type === 'error'">{{ socketMessage.message }}</p>
+      <p class="text-green-500 text-center" v-if="socketMessage.type === 'success'">{{ socketMessage.message }}</p>
     </div>
   </div>
 </template>
