@@ -25,7 +25,7 @@ async function insertEntryHistory(userId, entry_status) {
   try {
     // Fetch user details
     let { data: user, error: userError } = await supabase
-      .from('user')
+      .from('users')
       .select('first_name, last_name')
       .eq('id', userId)
       .single();
