@@ -18,24 +18,34 @@ const handleCreateUser = async () => {
     errorMessage.value = 'Please fill out all fields';
   } else {
     await handleFaceRegonition();
-    const { data, error } = await supabase.auth.signUp(
-      {
-        phone: unref(phoneNumber),
-        password: unref(password),
-        options: {
-          data: {
-            faceId: unref(faceId),
+    //
+    // Verify that the user has uploaded a picture
+    //
+    if (!unref(faceId)) {
+      errorMessage.value = 'Please upload a profile picture';
+      return;
+    } else {
+      const { data, error } = await supabase.auth.signUp(
+        {
+          phone: unref(phoneNumber),
+          password: unref(password),
+          options: {
+            data: {
+              faceId: unref(faceId),
+            }
           }
         }
+      )
+
+      if (error) {
+        successMessage.value = '';
+        errorMessage.value = error.message;
+      } else {
+        errorMessage.value = '';
+        successMessage.value = 'User created successfully! Faces recognized!';
       }
-    )
-    if (error) {
-      successMessage.value = '';
-      errorMessage.value = error.message;
-    } else {
-      errorMessage.value = '';
-      successMessage.value = 'User created successfully! Faces recognized!';
     }
+
   }
 };
 
@@ -61,6 +71,9 @@ const handleFileChange = (event) => {
 };
 
 const handleFaceRegonition = async () => {
+  //
+  // Send the image to AWS Rekognition and get the FaceId
+  //
   axios.post('/api', {
     imgdata: unref(profilePicture),
   })
@@ -98,7 +111,8 @@ const handleFaceRegonition = async () => {
         accept="image/*" />
       <p v-if="faceId"
         class="text-xs text-green-600 text-right">Upload Successful!</p>
-      <button @click="handleCreateUser">Create User</button>
+      <button @click="handleCreateUser"
+        :class="{ 'cursor-not-allowed': faceId.length < 1 }">Create User</button>
       <p class="text-red-500 text-center">{{ errorMessage }}</p>
       <!-- -->
       <p class="text-green-500 text-center">{{ successMessage }}</p>
