@@ -29,14 +29,17 @@ const handleCreateUser = async () => {
         {
           phone: unref(phoneNumber),
           password: unref(password),
-          options: {
-            data: {
-              faceId: unref(faceId),
-            }
-          }
         }
       )
+      const { data: updateData, error: updateError } = await supabase
+        .from('users')
+        .update({ face_id: unref(faceId) })
+        .eq('id', data.user.id);
 
+      if (updateError) {
+        console.error('Error updating user:', updateError);
+        return;
+      }
       if (error) {
         successMessage.value = '';
         errorMessage.value = error.message;
