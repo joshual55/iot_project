@@ -3,6 +3,7 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
+import { supabase } from "./supabase";
 const io = require("socket.io")(server, {
   cors: {
    origin: "*",
@@ -25,10 +26,20 @@ io.on("connection", async (socket) => {
   });
   socket.on("user_authorized", async (msg) => {
     console.log('Unlocking the door!')
+
     console.log('User: ', JSON.parse(msg).code)
     //
     // Impklement logic to check db and verify user is allowed to unlock door
     //
+    const code = JSON.parse(msg).code;
+    const phone = JSON.parse(msg).phone;
+
+    const { data, error } = await supabase.auth.verifyOtp({
+      phone,
+      token: code,
+      type: 'sms'
+    });
+    console.log('data: ', data);
     io.emit("unlock_door", "Let's unlock the door!");
   });
 });
