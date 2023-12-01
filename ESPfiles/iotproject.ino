@@ -2,6 +2,7 @@
 #include <HTTPClient.h>
 #include "esp_camera.h"
 #include <MyBase64.h>
+#include <WiFiClientSecure.h>
 
 #define PWDN_GPIO_NUM    -1
 #define RESET_GPIO_NUM   -1
@@ -175,30 +176,28 @@ String Photo2Base64() {
 }
 
 void sendImageToServer(String base64Image) {
-  //HTTPClient http;
-  WiFiClient client;
+  WiFiClientSecure client;
   HTTPClient http;
-
   http.begin(client, apiEndpoint);
-
+  client.setInsecure();
   // Set the content type and the base64 image as the request body
   http.addHeader("Content-Type", "application/json");
+  
+  // Add authorization header (replace "YourTokenHere" with your actual token)
+  http.addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFveW1naWV0eWh4eGhrbGhodnh3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY5OTMwMTQ5MCwiZXhwIjoyMDE0ODc3NDkwfQ.ta7C-rii70wvEvEfYTXgRUuKawZe9m-LBHVd-vZw3XU");
 
-  //String body = "\"" + base64Image + "\"";
   int httpResponseCode = http.POST("{\"imgdata\":\"" + base64Image + "\"}");
 
   if (httpResponseCode > 0) {
     Serial.print("HTTP Response code: ");
     Serial.println(httpResponseCode);
 
-    // Read the response from the server (if needed)
     String response = http.getString();
     Serial.println("Server response: " + response);
   } else {
     Serial.print("HTTP Error: ");
     Serial.println(httpResponseCode);
-}
+  }
 
   http.end();
-  //delay(5000); // Delay before capturing another photo
 }
