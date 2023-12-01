@@ -2,6 +2,7 @@
 #include <HTTPClient.h>
 #include "esp_camera.h"
 #include <MyBase64.h>
+#include <WiFiClientSecure.h>
 
 #define PWDN_GPIO_NUM    -1
 #define RESET_GPIO_NUM   -1
@@ -21,17 +22,15 @@
 #define HREF_GPIO_NUM    23
 #define PCLK_GPIO_NUM    22
 
+const byte red_led_gpio = 33;
+const byte green_led_gpio = 32;
 
 // Replace with your network credentials
-const char* ssid = "2000-2004@Gainesville_place";
-const char* password = "TwJK4b7XZ";
-
-// Replace with your server information
-const char* server = "jsonplaceholder.typicode.com";
-const int serverPort = 443; // HTTPs default port
+const char* ssid = "Verizon XT1585 2611";
+const char* password = "sh@wn0153";
 
 // Replace with your API endpoint
-const char* apiEndpoint = "/your-api-endpoint";
+const char* apiEndpoint = "https://aoymgietyhxxhklhhvxw.supabase.co/functions/v1/authorize-user-v2";
 
 // Pin number for the button
 const int buttonPin = 15;
@@ -44,6 +43,10 @@ bool capturePhotoFlag = false;
 void setup() {
   // Initialize Serial communication
   Serial.begin(115200);
+  WiFi.begin(ssid, password);
+
+  pinMode(red_led_gpio, OUTPUT);
+  pinMode(green_led_gpio, OUTPUT);
 
   // Initialize the camera
   camera_config_t config;
@@ -95,24 +98,43 @@ void setup() {
   pinMode(buttonPin, INPUT_PULLUP);
 }
 
+bool captureInProgress = false;
+
 void loop() {
   // Check if the button is pressed
-  if (digitalRead(buttonPin) == LOW) {
-    // Button is pressed, set the flag to capture a photo
+  if (digitalRead(buttonPin) == LOW && !captureInProgress) {
     Serial.println("Button Pressed");
-    capturePhotoFlag = true;
+    captureInProgress = true;
+    capturePhoto(); // Capture a new photo
   }
 
-  // Check if the flag is set to capture a photo
-  if (capturePhotoFlag) {
-    capturePhoto();
-    Serial.println(Photo2Base64());
-    capturePhotoFlag = false; // Reset the flag
+  if (captureInProgress && fb != NULL) {
+    // Convert the captured photo to base64
+    String base64Image = Photo2Base64();
+
+    // Send the base64 image to the server
+    if (!base64Image.isEmpty()) {
+      sendImageToServer(base64Image);
+    }
+
+    // Reset capture flag and release the frame buffer
+    captureInProgress = false;
+    esp_camera_fb_return(fb);
+    fb = NULL;
   }
 
   // Delay for some time to prevent continuous captures
-  //delay(1000); // Adjust the delay time as needed
+  delay(100); // Adjust the delay time as needed
 }
+
+  // Check if the flag is set to capture a photo
+  //if (capturePhotoFlag) {
+    
+    //capturePhotoFlag = false; // Reset the flag
+  //}
+
+  // Delay for some time to prevent continuous captures
+  //delay(1000); // Adjust the delay time as needed
 
 void capturePhoto() {
   fb = esp_camera_fb_get();
@@ -137,7 +159,8 @@ String Photo2Base64() {
       return "";
     }
 
-    String imageFile = "data:image/jpeg;base64,";
+    //String imageFile = "data:image/jpeg;base64,";
+    String imageFile = "";
 
     // Calculate the size of the base64 encoded string
     int outputLength = base64_enc_len(fb->len);
@@ -154,24 +177,45 @@ String Photo2Base64() {
 
     esp_camera_fb_return(fb);
 
+    Serial.println(imageFile);
     return imageFile;
 }
 
+void sendImageToServer(String base64Image) {
+  WiFiClientSecure client;
+  HTTPClient http;
+  http.begin(client, apiEndpoint);
+  client.setInsecure();
+  // Set the content type and the base64 image as the request body
+  http.addHeader("Content-Type", "application/json");
+  
+  // Add authorization header (replace "YourTokenHere" with your actual token)
+  http.addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFveW1naWV0eWh4eGhrbGhodnh3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY5OTMwMTQ5MCwiZXhwIjoyMDE0ODc3NDkwfQ.ta7C-rii70wvEvEfYTXgRUuKawZe9m-LBHVd-vZw3XU");
 
-String urlencode(String str) {
-  const char *msg = str.c_str();
-  const char *hex = "0123456789ABCDEF";
-  String encodedMsg = "";
-  while (*msg != '\0') {
-    if (('a' <= *msg && *msg <= 'z') || ('A' <= *msg && *msg <= 'Z') || ('0' <= *msg && *msg <= '9') || *msg == '-' || *msg == '_' || *msg == '.' || *msg == '~') {
-      encodedMsg += *msg;
-    } else {
-      encodedMsg += '%';
-      encodedMsg += hex[(unsigned char)*msg >> 4];
-      encodedMsg += hex[*msg & 0xf];
-    }
-    msg++;
+  // Proper JSON formatting
+  String jsonBody = "{\"imgdata\":\"" + base64Image + "\"}";
+  int httpResponseCode = http.POST(jsonBody);
+
+  if (httpResponseCode == 200) {
+    digitalWrite(green_led_gpio, HIGH);  // Turn on green LED for 5 seconds
+    delay(5000);
+    digitalWrite(green_led_gpio, LOW);   // Turn off green LED
+  } else {
+    digitalWrite(red_led_gpio, HIGH);    // Turn on red LED for 5 seconds
+    delay(5000);
+    digitalWrite(red_led_gpio, LOW);     // Turn off red LED
   }
-  return encodedMsg;
-}
 
+  if (httpResponseCode > 0) {
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
+
+    String response = http.getString();
+    Serial.println("Server response: " + response);
+  } else {
+    Serial.print("HTTP Error: ");
+    Serial.println(httpResponseCode);
+  }
+
+  http.end();
+}
