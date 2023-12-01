@@ -27,9 +27,8 @@ io.on("connection", async (socket) => {
     console.log('Status: ', msg)
   });
   socket.on("user_authorized", async (msg) => {
-    console.log('Unlocking the door!')
 
-    console.log('User: ', JSON.parse(msg).code)
+    console.log('[unlock-request]: Recieved unlock request for: ', JSON.parse(msg).code)
     //
     // Impklement logic to check db and verify user is allowed to unlock door
     //
@@ -42,7 +41,8 @@ io.on("connection", async (socket) => {
       type: 'sms'
     });
     if (error) {
-      console.log('error: ', error);
+      io.emit('unlock_error', error.message);
+      console.log('[unlock-error]: ', error);
       return;
     } else {
       io.emit("unlock_door", "Let's unlock the door!");
