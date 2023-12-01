@@ -21,6 +21,33 @@ app.use(express.static(__dirname + "/"));
 server.listen(80, () => {
   console.log("listening on *:80");
 });
+async function insertEntryHistory(userId, entry_status) {
+  try {
+    // Fetch user details
+    let { data: user, error: userError } = await supabase
+      .from('user')
+      .select('first_name, last_name')
+      .eq('id', userId)
+      .single();
+
+    if (userError) throw userError;
+
+    // Insert into entry history
+    let { error: entryError } = await supabase
+      .from('entry_history')
+      .insert([
+        { user_id: userId, first_name: user.first_name, last_name: user.last_name, entry_status: entry_status, entry_time: new Date(), }
+      ]);
+
+    if (entryError) throw entryError;
+
+    return 'Entry recorded successfully';
+  } catch (error) {
+    console.error('Error:', error.message);
+    return 'Error in recording entry';
+  }
+}
+
 
 io.on("connection", async (socket) => {
   socket.on("status", async (msg) => {
@@ -51,6 +78,7 @@ io.on("connection", async (socket) => {
     } else {
       io.emit("unlock_door", "Let's unlock the door!");
       console.log(`[unlock-success] - unlocking for ${data.user.id}` );
+      insertEntryHistory(data.user.id, 'authorized');
     }
   });
 });
