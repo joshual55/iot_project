@@ -35,10 +35,9 @@ const handleCreateUser = async () => {
       const { data: updateData, error: updateError } = await supabase
         .from('users')
         .update({ face_id: unref(faceId) })
+        .update({ first_name: unref(firstName) })
+        .update({ last_name: unref(lastName) })
         .eq('id', data.user.id)
-        .eq('first_name', unref(firstName))
-        .eq('last_name', unref(lastName));
-
       if (updateError) {
         console.error('Error updating user:', updateError);
         return;
