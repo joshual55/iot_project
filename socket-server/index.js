@@ -59,7 +59,8 @@ io.on("connection", async (socket) => {
     //
     // Impklement logic to check db and verify user is allowed to unlock door
     //
-    const code = JSON.parse(msg).code;
+    try {
+      const code = JSON.parse(msg).code;
     const phone = JSON.parse(msg).phone;
 
     const { data, error } = await supabase.auth.verifyOtp({
@@ -79,6 +80,9 @@ io.on("connection", async (socket) => {
       io.emit("unlock_door", "Let's unlock the door!");
       console.log(`[unlock-success] - unlocking for ${data.user.id}` );
       insertEntryHistory(data.user.id, 'authorized');
+    }
+    } catch(e) {
+      return;
     }
   });
 });
