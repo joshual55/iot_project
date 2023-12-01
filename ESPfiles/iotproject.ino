@@ -154,7 +154,8 @@ String Photo2Base64() {
       return "";
     }
 
-    String imageFile = "data:image/jpeg;base64,";
+    //String imageFile = "data:image/jpeg;base64,";
+    String imageFile = "";
 
     // Calculate the size of the base64 encoded string
     int outputLength = base64_enc_len(fb->len);
@@ -186,7 +187,10 @@ void sendImageToServer(String base64Image) {
   // Add authorization header (replace "YourTokenHere" with your actual token)
   http.addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFveW1naWV0eWh4eGhrbGhodnh3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY5OTMwMTQ5MCwiZXhwIjoyMDE0ODc3NDkwfQ.ta7C-rii70wvEvEfYTXgRUuKawZe9m-LBHVd-vZw3XU");
 
-  int httpResponseCode = http.POST("{\"imgdata\":\"" + base64Image + "\"}");
+  // Proper JSON formatting
+  String jsonBody = "{\"imgdata\":\"" + base64Image + "\"}";
+  int httpResponseCode = http.POST(jsonBody);
+
 
   if (httpResponseCode > 0) {
     Serial.print("HTTP Response code: ");
