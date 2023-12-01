@@ -10,6 +10,7 @@ const socketMessage = ref({});
 const socketURL = 'http://ec2-18-118-47-118.us-east-2.compute.amazonaws.com';
 let socket;
 
+
 const handleVerifyCode = () => {
   // Create a Socket.IO connection
   socket = io(socketURL);
@@ -62,7 +63,7 @@ const handleVerifyCode = () => {
           type="text"
           placeholder="Enter code" />
       </div>
-      <button @click="handleVerifyCode">Unlock Door</button>
+      <button @click="handleVerifyCode" class="mb-4">Unlock Door</button>
       <p class="text-red-500 text-center" v-if="socketMessage.type === 'error'">{{ socketMessage.message }}</p>
       <p class="text-green-500 text-center" v-if="socketMessage.type === 'success'">{{ socketMessage.message }}</p>
     </div>
