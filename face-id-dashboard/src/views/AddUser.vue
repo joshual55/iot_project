@@ -16,12 +16,19 @@ const handleCreateUser = async () => {
     errorMessage.value = 'Please fill out all fields';
   } else {
     await handleFaceRegonition();
-    const { data, error } = await supabase
-      .from('users')
-      .insert([
-        { first_name: unref(firstName), last_name: unref(lastName), phone: unref(phoneNumber), face_id: unref(faceId) },
-      ])
-      .select();
+    const { data, error } = await supabase.auth.signUp(
+      {
+        email: 'me@ethansmith.us',
+        password: 'example-password',
+        phone: '+14072748119',
+        options: {
+          data: {
+            first_name: 'John',
+            age: 27,
+          }
+        }
+      }
+    )
     if (error) {
       successMessage.value = '';
       errorMessage.value = error.message;
@@ -32,6 +39,12 @@ const handleCreateUser = async () => {
   }
 };
 
+const test2faLogin = async () => {
+  const { data, error } = await supabase.auth.signInWithOtp({
+    phone: '+14072748119',
+  })
+
+}
 
 const handleFileChange = (event) => {
   const file = event.target.files[0];
@@ -43,7 +56,7 @@ const handleFileChange = (event) => {
       handleFaceRegonition();
     };
     reader.readAsDataURL(file);
-  
+
   }
 };
 
@@ -62,6 +75,7 @@ const handleFaceRegonition = async () => {
 <template>
   <div class="dashboard-landing">
     <Navbar />
+    <button @click="test2faLogin">Send msg</button>
     <h1 class="text-center text-xl font-bold mb-4 mt-20">Add New User</h1>
     <div class="form-wrapper w-[500px] mx-auto gap-y-3 flex flex-col">
       <div class="grid grid-cols-2 gap-2">
@@ -78,7 +92,8 @@ const handleFaceRegonition = async () => {
       <input type="file"
         @change="handleFileChange"
         accept="image/*" />
-      <p v-if="faceId" class="text-xs text-green-600 text-right">Upload Successful!</p>
+      <p v-if="faceId"
+        class="text-xs text-green-600 text-right">Upload Successful!</p>
       <button @click="handleCreateUser">Create User</button>
       <p class="text-red-500 text-center">{{ errorMessage }}</p>
       <!-- -->
@@ -97,4 +112,5 @@ const handleFaceRegonition = async () => {
   button {
     @apply bg-blue-500 hover:bg-blue-600 text-white rounded-lg p-2;
   }
-}</style>
+}
+</style>
