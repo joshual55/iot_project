@@ -41,7 +41,12 @@ io.on("connection", async (socket) => {
       token: code,
       type: 'sms'
     });
-    console.log('data: ', data);
-    io.emit("unlock_door", "Let's unlock the door!");
+    if (error) {
+      console.log('error: ', error);
+      return;
+    } else {
+      io.emit("unlock_door", "Let's unlock the door!");
+      console.log(`[unlock-success] - unlocking for ${data?.data.user.id}` );
+    }
   });
 });
