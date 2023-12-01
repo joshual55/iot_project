@@ -5,7 +5,7 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
-const { supabase } = require("./supabase");
+const supabase = require("./supabase");
 const io = require("socket.io")(server, {
   cors: {
    origin: "*",
