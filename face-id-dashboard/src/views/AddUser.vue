@@ -31,10 +31,13 @@ const handleCreateUser = async () => {
           password: unref(password),
         }
       )
+      // Update the user's face_id in the public users table.
       const { data: updateData, error: updateError } = await supabase
         .from('users')
         .update({ face_id: unref(faceId) })
-        .eq('id', data.user.id);
+        .eq('id', data.user.id)
+        .eq('first_name', unref(firstName))
+        .eq('last_name', unref(lastName));
 
       if (updateError) {
         console.error('Error updating user:', updateError);
