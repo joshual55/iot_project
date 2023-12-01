@@ -41,7 +41,11 @@ io.on("connection", async (socket) => {
       type: 'sms'
     });
     if (error) {
-      io.emit('unlock_error', error.message);
+      const message = {
+        type: 'error',
+        message: error.message,
+      }
+      io.emit('unlock_error', JSON.stringify(message));
       console.log('[unlock-error]: ', error);
       return;
     } else {
