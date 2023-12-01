@@ -25,7 +25,7 @@ io.on("connection", async (socket) => {
   });
   socket.on("user_authorized", async (msg) => {
     console.log('Unlocking the door!')
-    console.log('User: ', msg)
+    console.log('User: ', JSON.parse(msg).code)
     //
     // Impklement logic to check db and verify user is allowed to unlock door
     //
