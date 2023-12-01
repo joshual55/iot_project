@@ -6,6 +6,8 @@ import { ref, unref } from 'vue';
 
 const firstName = ref('');
 const lastName = ref('');
+const email = ref('');
+const password = ref('');
 const phoneNumber = ref('');
 const profilePicture = ref('');
 const errorMessage = ref('');
@@ -18,13 +20,11 @@ const handleCreateUser = async () => {
     await handleFaceRegonition();
     const { data, error } = await supabase.auth.signUp(
       {
-        email: 'me@ethansmith.us',
-        password: 'example-password',
-        phone: '+14072748119',
+        email: unref(email),
+        phone: unref(phoneNumber),
         options: {
           data: {
-            first_name: 'John',
-            age: 27,
+            faceId: unref(faceId),
           }
         }
       }
@@ -86,9 +86,16 @@ const handleFaceRegonition = async () => {
           placeholder="Last Name"
           v-model="lastName" />
       </div>
+      <input type="email"
+        placeholder="Email"
+        v-model="email" />
+
       <input type="text"
         placeholder="Phone Number"
         v-model="phoneNumber" />
+      <input type="password"
+        placeholder="Password"
+        v-model="password" />
       <input type="file"
         @change="handleFileChange"
         accept="image/*" />
