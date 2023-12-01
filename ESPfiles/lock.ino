@@ -19,6 +19,7 @@ const char *ssid = "ethezus iPhone";
 const char *pass = "ethansmith";
 const char *HOST = "ws://ec2-18-118-47-118.us-east-2.compute.amazonaws.com";
 
+//https://esp32io.com/tutorials/esp32-servo-motor#google_vignette Used this for servo
 Servo myServo;
 int servoPosition = 0;    // variable to store the servo position
 int servoPin = 13;
