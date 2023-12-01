@@ -20,8 +20,8 @@ const handleCreateUser = async () => {
     await handleFaceRegonition();
     const { data, error } = await supabase.auth.signUp(
       {
-        email: unref(email),
         phone: unref(phoneNumber),
+        password: unref(password),
         options: {
           data: {
             faceId: unref(faceId),
@@ -86,9 +86,6 @@ const handleFaceRegonition = async () => {
           placeholder="Last Name"
           v-model="lastName" />
       </div>
-      <input type="email"
-        placeholder="Email"
-        v-model="email" />
 
       <input type="text"
         placeholder="Phone Number"

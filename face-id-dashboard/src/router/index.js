@@ -18,6 +18,11 @@ const router = createRouter({
       name: 'Add User',
       component: () => import('../views/AddUser.vue')
     },
+    {
+      path: '/verify-code',
+      name: 'Verify Code',
+      component: () => import('../views/VerifyCode.vue')
+    }
   ]
 })
 
