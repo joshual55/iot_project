@@ -32,9 +32,9 @@ void event(const char *payload, size_t length){
     digitalWrite(led_gpio, LOW);
 
     // Turn the servo 180 degrees
-    for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+    for (servoPosition = 0; servoPosition <= 90; servoPosition += 1) { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
-    myservo.write(pos);    // tell servo to go to position in variable 'pos'
+    myServo.write(servoPosition);    // tell servo to go to position in variable 'pos'
 	}
 
     // servoPosition += 90;
@@ -50,8 +50,8 @@ void event(const char *payload, size_t length){
     //Wait ten seconds before servo goes back to locked
     delay(10000); 
     //Reset back to 0
-	for (pos = 180; pos >= 0; pos -= 1) { 
-		myservo.write(pos);    // tell servo to go to position in variable 'pos'
+	for (servoPosition = 90; servoPosition >= 0; servoPosition -= 1) { 
+		myServo.write(servoPosition);    // tell servo to go to position in variable 'pos'
 	}
 }
 
@@ -74,8 +74,8 @@ void setup(){
 	ESP32PWM::allocateTimer(1);
 	ESP32PWM::allocateTimer(2);
 	ESP32PWM::allocateTimer(3);
-	myservo.setPeriodHertz(50);    // standard 50 hz servo
-	myservo.attach(servoPin, 500, 2400); // attaches the servo on pin 13 to the servo object
+	myServo.setPeriodHertz(50);    // standard 50 hz servo
+	myServo.attach(servoPin, 500, 2400); // attaches the servo on pin 13 to the servo object
     myServo.write(servoPosition);  // Set the initial servo position
     // Connect to WIFI
     WiFiMulti.addAP(ssid, pass);
