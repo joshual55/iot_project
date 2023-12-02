@@ -44,48 +44,36 @@ Deno.serve(async (req) => {
     //
     // TODO: Implement handler to send messsage via SMS
     //
-    const phone = ''; //need to get the phone number from the table
 
-    const signIn = async() => {
-      let{ error } = await supabaseClient.auth.signInWithOtp({
-        phone: phone
-      })
-
-      if (error) {
-        console.error(error)
-        return
+    let responseObject = {
+      face: responseJSON.data.FaceMatches[0],
+      user: data, // Make sure 'data' is defined and accessible here
+      message_sent: null // Initialize with a default value
+    };
+    
+    const signIn = async (number) => {
+      try {
+        let { data, error } = await supabaseClient.auth.signInWithOtp({
+          phone: number
+        });
+    
+        if (error) throw error;
+        
+        // If sign in is successful, return a success message
+        return { success: true, message: 'OTP sent successfully' };
+      } catch (error) {
+        console.error(error);
+        // If there is an error, return the error
+        return { success: false, message: error.message };
       }
     }
     
-    signIn()
+    signIn(data[0].phone).then((response) => {
+      // Update responseObject within the .then block
+      responseObject.message_sent = response.message;
+      
+    });
 
-    const verify = async() => {
-      const token = ''; //Get the token from the web app
-
-      let { session, error } = await supabaseClient.auth.verifyOTP({
-        phone: phone,
-        token: token,
-        type: 'sms'
-      })
-
-      if (error) {
-        console.error(error)
-        return
-      }
-
-      let obj = JSON.parse(session)
-      if (obj.expires_in > 0 && obj.access_token != null) {
-        //then return the ok to unlock the door
-      }
-    }
-
-    verify()
-
-
-    const responseObject = {
-      face: responseJSON.data.FaceMatches[0],
-      user: data,
-    }
     //
     // TODO: Implement response that will determine if user is authorized or not.
     //
