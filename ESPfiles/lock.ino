@@ -21,7 +21,7 @@ const char *HOST = "ws://ec2-18-118-47-118.us-east-2.compute.amazonaws.com";
 
 //https://esp32io.com/tutorials/esp32-servo-motor#google_vignette Used this for servo
 Servo myServo;
-int servoPosition = 0;    // variable to store the servo position
+int servoPosition = 110;    // variable to store the servo position
 int servoPin = 13;
 
 
@@ -31,8 +31,8 @@ void event(const char *payload, size_t length){
     delay(2000);                   // Wait for a second
     digitalWrite(led_gpio, LOW);
 
-    // Turn the servo 180 degrees
-    for (servoPosition = 0; servoPosition <= 90; servoPosition += 1) { // goes from 0 degrees to 180 degrees
+    // Turn the servo 90 degrees
+    for (servoPosition = 110; servoPosition > 20; servoPosition -= 1) { // goes from 110 degrees to 20 degrees
     // in steps of 1 degree
     myServo.write(servoPosition);    // tell servo to go to position in variable 'pos'
 	}
@@ -49,8 +49,8 @@ void event(const char *payload, size_t length){
     
     //Wait ten seconds before servo goes back to locked
     delay(10000); 
-    //Reset back to 0
-	for (servoPosition = 90; servoPosition >= 0; servoPosition -= 1) { 
+    //Reset back to 110
+	for (servoPosition = 20; servoPosition < 110; servoPosition += 1) { 
 		myServo.write(servoPosition);    // tell servo to go to position in variable 'pos'
 	}
 }
